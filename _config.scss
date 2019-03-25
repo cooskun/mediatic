@@ -1,0 +1,56 @@
+// Set default device type
+$default-device: 'only screen' !default;
+
+// Set default unit
+$default-unit-for-unitless: 'px' !default;
+
+// Certain values for some media queries
+$device-types: all, print, 'only print', screen, 'only screen', speech, 'only speech';
+$orientations: portrait, landscape;
+$color-modes: dark, light;
+
+// Breakpoints
+$breakpoints: (
+  xs: 320px,
+  sm: 576px,
+  md: 768px,
+  lg: 992px,
+  xl: 1200px
+) !default;
+
+// Min and Max breakpoints
+$xs-min: map_get($breakpoints, xs);
+$sm-min: map_get($breakpoints, sm);
+$md-min: map_get($breakpoints, md);
+$lg-min: map_get($breakpoints, lg);
+$xl-min: map_get($breakpoints, xl);
+$xs-max: $sm-min - 1;
+$sm-max: $md-min - 1;
+$md-max: $lg-min - 1;
+$lg-max: $xl-min - 1;
+
+// Short Queries
+$keywords: (
+    all:        all,
+    print:      'only print',
+    screen:     'only screen',
+    speech:     'only speech',
+    xs:         ( min-width: $xs-min, max-width: $xs-max ),
+    sm:         ( min-width: $sm-min, max-width: $sm-max ),
+    md:         ( min-width: $md-min, max-width: $md-max ),
+    lg:         ( min-width: $lg-min, max-width: $lg-max ),
+    xl:         ( min-width: $xl-min ),
+    min-xs:     ( min-width: $xs-min ),
+    min-sm:     ( min-width: $sm-min ),
+    min-md:     ( min-width: $md-min ),
+    min-lg:     ( min-width: $lg-min ),
+    min-xl:     ( min-width: $xl-min ),
+    max-xs:     ( max-width: $xs-max ),
+    max-sm:     ( max-width: $sm-max ),
+    max-md:     ( max-width: $md-max ),
+    max-lg:     ( max-width: $lg-max ),
+    portrait:   ( orientation: portrait ),
+    landscape:  ( orientation: landscape ),
+    dark:  ( prefers-color-scheme: dark ),
+    light: ( prefers-color-scheme: light )
+);

@@ -1,0 +1,102 @@
+//  Add unit to value if unit not exist
+@function fix-unitless($value, $unit: $default-unit-for-unitless) {
+  @if type_of($value) == 'number' and unitless($value) {
+    $value: $value * 1#{$unit};
+  }
+  @return $value;
+}
+
+// Merge a prop and value as query
+@function merge_query($prop, $value) {
+   $query: str-insert('(:)', #{$prop}, 2);
+   $query: str-insert($query, #{$value}, -2);
+
+   @return $query;
+}
+
+// Add new media query to tail
+@function add_query($query, $newQuery, $prepend: false) {
+  @if $prepend {
+    $query: str-insert($query, $newQuery, 1);
+  }
+
+  @else {
+    $query: str-insert($query, ' and ', -1);
+    $query: str-insert($query, $newQuery, -1);
+  }
+
+  @return $query;
+}
+
+// Check if value exist in query
+@function is_exist($exister, $value) {
+  @if type-of($exister) == 'string' {
+    @return str-index($exister, #{$value}) != null;
+  } @else if type-of($exister) == 'list' {
+    @return (index($exister, $value) != null);
+  }
+}
+
+//  Check if value not exist on the query
+@function not_exist($exister, $value) {
+  @if type-of($exister) == 'string' {
+    @return str-index($exister, #{$value}) == null;
+  } @else if type-of($exister) == 'list' {
+    @return (index($exister, $value) == null);
+  }
+}
+
+// Check if device not exist in query
+@function device_exist($value) {
+  $devices: $device-types;
+
+  @each $device in $devices {
+    @if is_exist($value, $device) {
+      @return true;
+    }
+  }
+
+  @return false;
+}
+
+// Extend tail into retina expression
+@function retina_extend($value) {
+  @return 
+  'only screen and (-webkit-min-device-pixel-ratio: 2)#{$value}, only screen and (min-device-pixel-ratio: 2)#{$value}, only screen and (min-resolution: 192dpi)#{$value}, only screen and (min-resolution: 2dppx)#{$value}';
+}
+
+// check if value type is string
+@function is_string($value) {
+  @return type-of($value) == 'string';
+}
+
+// check if value is map
+@function is_map($value) {
+  @return type-of($value) == 'map';
+}
+
+// check if value is list
+@function is_list($value) {
+  @return type-of($value) == 'list';
+}
+
+// check if value is number
+@function is_number($value) {
+  @return type-of($value) == 'number';
+}
+
+// check if value is valid keyword
+@function is_keyword($value) {
+  @return map-has-key($keywords, $value);
+}
+
+// Check if value is a device
+@function is_device($value) {
+  $devices: $device-types;
+
+  @if is_exist($devices, $value) {
+    @return true;
+  }
+
+  @return false;
+}
