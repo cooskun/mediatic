@@ -1,0 +1,33 @@
+//  Add unit to value if unit not exist
+@function fix_unitless($value, $unit: $default-unit-for-unitless) {
+  @if unitless($value) {
+    $value: $value * 1#{$unit};
+  }
+  @return $value;
+}
+
+// Extend tail into retina expression
+@function retina_extend($value) {
+  @return 
+  'only screen and (-webkit-min-device-pixel-ratio: 2) #{$value}, only screen and (min-device-pixel-ratio: 2) #{$value}, only screen and (min-resolution: 192dpi) #{$value}, only screen and (min-resolution: 2dppx) #{$value}';
+}
+
+// check if value is a number
+@function is_number($value) {
+  @return type-of($value) == 'number';
+}
+
+// check if value is a device
+@function is_device($key) {
+  @return map-has-key($devices, $key);
+}
+
+// check if value is a breakpoint
+@function is_breakpoint($key) {
+  @return map-has-key($breakpoints, $key);
+}
+
+// check if value is a query
+@function is_query($key) {
+  @return map-has-key($queries, $key);
+}

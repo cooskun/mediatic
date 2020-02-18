@@ -1,125 +1,148 @@
-@function media($args) {
-  // Tail to keep all media queries together
-  $tail: '' !default;
+// Function, default usage
+@function mediatic($args) {
+  // Media map to keep min-width, orientation etc...
+  $media: () !default;
 
-  // Variable to check if device has retina screen
-  $is-retina: '' !default;
+  // Variable to keep final media query
+  $tail: null !default;
 
   // Device
-  $device: $default-device !default;
-  
+  $device: null !default;
+
+  // Variable to check if device has retina screen
+  $is-retina: null !default;  
+
   // Arg control in loop
   @each $arg in $args {
-    // Arg is a specific keyword exept retina (xs, portrait, dark-mode ...)
-    @if is_string($arg) and is_keyword($arg) and $arg != 'retina' {
-      // Get the keyword
-      $keyword: map-get($keywords, $arg);
-
-      // Keyword is a map
-      @if is_map($keyword) {
-        @each $key in $keyword {
-          // Get property and value from the key
-          $prop : nth($key, 1);
-          $value: nth($key, 2);
-          
-          // Create a media query
-          $query: merge_query($prop, $value);
-          
-          // If query not exist already, add to tail
-          @if not_exist($tail, $prop) {
-              $tail: add_query($tail, $query);
-          }
-        }
-      }
-
-      // Keyword is not a map, check if it is a device
-      @else if is_device($keyword) and device_exist($tail) == false   {
-        $device: $keyword;        
-      }
-    }
-
-    // Arg is retina
-    @else if $arg == 'retina' {
+    // Arg is retina and retina not set yet
+    @if $arg == 'retina' {
       $is-retina: true;
+      $device: 'only screen';
     }
 
-    // Arg is list
-    // orientation portrait, min-width 320px ...
-    @else if is_list($arg) {      
-      @each $key in $arg  {
-        $prop-index: index($arg, $key);
-        $value-index: $prop-index + 1;
+    // Arg is a device and device not set yet
+    @else if is_device($arg) and $device == null {      
+      $device: map-get($devices, $arg);
+    }
 
-        @if $prop-index % 2 != 0 {
-          // Get feature and value from the key
-          $prop: nth($arg, $prop-index);
-          $value: nth($arg, $value-index);
+    // Arg is a query
+    @else if is_query($arg) {
+      $query: map-get($queries, $arg); 
 
-          // Merge query
-          $query: merge_query($prop, $value);
-
-          @if not_exist($tail, $prop) {
-              $tail: add_query($tail, $query);
-          }
+      @each $key, $value in $query {
+        @if map-has-key($media, $key) == false {
+          $media: map-merge($media, ( $key: $value ));
         }
-      }      
-    }
-
-    // Arg is a pure CSS query
-    // (min-width: 320px), (orientation: portrait) ...
-    @if type_of($arg) == 'map' {
-      // Get feature and
-      $prop: map-keys($arg);
-      $value: map-values($arg);
-
-      // Merge query
-      $query: merge_query($prop, $value);
-
-      @if not_exist($tail, $prop) {
-        $tail: add_query($tail, $query);
       }
     }
 
-    // Arg is a number (320, 480px, 30rem ...)
-    @if is_number($arg) {
-      // Fix if value has no unit
-      $arg: fix-unitless($arg);
+    @else if is_breakpoint($arg) {
+      $breakpoint: map-get($breakpoints, $arg);
 
-      @if is_exist($tail, min-width) and is_exist($tail, max-width) {
+      // min-width and max-width exist already
+      @if map-has-key($media, min-width) and map-has-key($media, max-width) {
         @warn "You can add maximum two number value";
-      } 
-      @else if is_exist($tail, min-width) {
-        $query: merge_query('max-width', #{$arg});
-        $tail: add_query($tail, $query);
-      } 
+      }
+      // min-width exist, max-width not exist    
+      @else if map-has-key($media, min-width) {
+        $current-min-width: map-get($media, min-width);
+
+        // About to set max-width
+        // Make sure incoming value is bigger than min-width
+        // If it is, set the value as max-width
+        @if $current-min-width <= $breakpoint {
+          $media: map-merge($media, (
+            max-width: #{$breakpoint - 1}
+          ));
+        }
+        // Developer made a sorting mistake
+        // max-width written before min-width
+        // Correct them on the media  
+        @else {
+          $media: map-merge($media, (
+            min-width: $breakpoint,
+            max-width: $current-min-width
+          ))
+        }
+      }
+      // Both min-width and max-width not exist
       @else {
-        $query: merge_query('min-width', #{$arg});
-        $tail: add_query($tail, $query);
+        $media: map-merge($media, (min-width: $breakpoint));
       } 
+    }    
+
+    @else if is_number($arg) {
+      // Fix if value has no unit
+      $arg: fix_unitless($arg);
+
+      // min-width and max-width exist already
+      @if map-has-key($media, min-width) and map-has-key($media, max-width) {
+        @warn "You can add maximum two number value";
+      }
+      // min-width exist, max-width not exist    
+      @else if map-has-key($media, min-width) {
+        $current-min-width: map-get($media, min-width);
+
+        // About to set max-width
+        // Make sure incoming value is bigger than min-width
+        // If it is, set the value as max-width
+        @if $current-min-width <= $breakpoint {
+          $media: map-merge($media, (
+            max-width: $breakpoint
+          ));
+        }
+        // Developer made a sorting mistake
+        // max-width written before min-width
+        // Correct them on the media  
+        @else {
+          $media: map-merge($media, (
+            min-width: $breakpoint,
+            max-width: $current-min-width
+          ))
+        }
+      }
+      // Both min-width and max-width not exist
+      @else {
+        $media: map-merge($media, (min-width: $breakpoint));
+      }
     }
   }
 
-  // If retina, extend the tail in retina expression
+  // Device not set, and no retina
+  // Set default device as choosen device
+  @if $is-retina != true and $device == null {
+    $tail: $default-device;
+  }
+
+  // Not retina, device prefer exist
+  // Create the tail that starts with choosen device
+  @if $is-retina != true and $device != null {
+    $tail: $device;
+  }
+
   @if $is-retina == true {
+    @each $key, $value in $media {
+      $tail: $tail 'and (#{ $key }: #{ $value })';
+    }
     $tail: retina_extend($tail);
   }
-
-  // Set device type to tail if no exist
-  @if device_exist($tail) == false {
-    $tail: add_query($tail, $device, true);
+  @else {
+    @each $key, $value in $media {
+      $tail: $tail ' and (#{ $key }: #{ $value })';
+    }
   }
 
-  // Print out the tail
-  @return #{$tail};
+  // Print out the media
+  @return $tail;
 }
 
-// MEDIA 
-@mixin media($args...) {
-  // Get the query tail
-  $tail: media($args);
+// Create instance as mixin too 
+@mixin mediatic($args) {
+  // Get the query media
+  $media: mediatic($args);
 
-  // Print out the tail
-  @media #{$tail} {
+  // Print out the media
+  @media #{$media} {
     @content;
   }
 }
