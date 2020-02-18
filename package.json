@@ -1,0 +1,19 @@
+{
+  "name": "mediatic",
+  "version": "2.0.0",
+  "description": "'Advanced and simple media queries'",
+  "main": "_index.scss",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/coskunbaris/mediatic.git"
+  },
+  "author": "coskun.bris@gmail.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/coskunbaris/mediatic/issues"
+  },
+  "homepage": "https://github.com/coskunbaris/mediatic#readme"
+}
